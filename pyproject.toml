@@ -1,0 +1,49 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "cwhap"
+version = "0.1.0"
+description = "Conductor We Have A Problem - Terminal GUI to monitor AI agents"
+license = "MIT"
+requires-python = ">=3.11"
+authors = [
+    { name = "Ayan Goswami" }
+]
+dependencies = [
+    "textual>=0.87.0",
+    "watchdog>=4.0.0",
+    "psutil>=7.0.0",
+    "pydantic>=2.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.24.0",
+    "textual-dev>=1.0.0",
+    "mypy>=1.10.0",
+    "ruff>=0.5.0",
+]
+
+[project.scripts]
+cwhap = "cwhap.__main__:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/cwhap"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

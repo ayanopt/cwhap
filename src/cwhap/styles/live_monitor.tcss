@@ -1,0 +1,82 @@
+/* CWHAP Live Monitor Layout */
+
+Screen {
+    background: $surface;
+    layout: grid;
+    grid-size: 1;
+    grid-rows: auto auto 1fr auto;
+}
+
+/* Row 1: Conflict Alert (full width, auto height) */
+ConflictAlert {
+    width: 100%;
+}
+
+/* Row 2: Active Agents Container */
+#agents-container {
+    height: auto;
+    min-height: 10;
+    max-height: 12;
+    padding: 0 1;
+    layout: horizontal;
+    overflow-x: auto;
+}
+
+#agents-title {
+    dock: top;
+    height: 1;
+    padding: 0 1;
+    text-style: bold;
+}
+
+#no-agents {
+    width: 100%;
+    content-align: center middle;
+    color: $text-muted;
+}
+
+/* Row 3: Main content (stream + heatmap) */
+#main-content {
+    layout: grid;
+    grid-size: 2 1;
+    grid-gutter: 1;
+    padding: 0 1;
+}
+
+LiveStream {
+    column-span: 1;
+}
+
+ActivityHeatmap {
+    column-span: 1;
+}
+
+/* Row 4: Footer with sparkline */
+ActivitySparkline {
+    width: 100%;
+}
+
+/* Header */
+Header {
+    dock: top;
+    height: 1;
+}
+
+/* Footer keybindings */
+Footer {
+    dock: bottom;
+}
+
+/* Agent cards in horizontal scroll */
+AgentCard {
+    width: 28;
+    height: 8;
+    margin: 0 1 0 0;
+}
+
+/* Quick stats in header area */
+#quick-stats {
+    dock: right;
+    width: auto;
+    padding: 0 2;
+}
