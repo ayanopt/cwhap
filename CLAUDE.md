@@ -2,61 +2,46 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Project Overview
-
-CWHAP (Conductor We Have A Problem) is a Python terminal GUI for **live monitoring** of Claude Code AI agents with conflict detection and data-dense visualizations.
-
 ## Commands
 
 ```bash
-# Install
-pip install -e .
-
-# Run
-cwhap
-
-# Development
-pip install -e ".[dev]"
-pytest
-mypy src/cwhap
-ruff check src/cwhap
+pip install -e .    # Install
+cwhap               # Run
+pytest              # Test
+ruff check src      # Lint
+mypy src/cwhap      # Type check
 ```
 
 ## Architecture
 
 ```
 src/cwhap/
-├── app.py                    # Main Textual app
-├── models/
-│   └── agent.py              # LiveAgent, ConflictEvent, LiveActivityEvent
-├── monitors/
-│   └── conflict_detector.py  # Time-window conflict detection
-├── parsers/
-│   └── session_parser.py     # Parses ~/.claude/projects/ JSONL
+├── app.py                    # Main Textual app, orchestrates watchers and widgets
+├── models/agent.py           # LiveAgent, ConflictEvent, LiveActivityEvent
+├── monitors/conflict_detector.py  # Tracks file access, detects overlaps within 5s window
+├── parsers/session_parser.py # Reads ~/.claude/projects/ session index and JSONL files
 ├── watchers/
-│   ├── session_watcher.py    # IndexWatcher for session list changes
-│   └── tail_watcher.py       # JSONL tailing for live activity
-├── widgets/
-│   ├── agent_card.py         # Live agent status card
-│   ├── conflict_alert.py     # Conflict warning banner
-│   ├── heatmap.py            # File access heatmap
-│   ├── live_stream.py        # Real-time activity feed
-│   └── sparkline.py          # Activity timeline (▁▂▃▄▅▆▇█)
-└── styles/
-    └── live_monitor.tcss     # Grid layout
+│   ├── tail_watcher.py       # Tails JSONL files, emits LiveActivityEvent on new lines
+│   └── session_watcher.py    # IndexWatcher detects new/changed sessions
+└── widgets/
+    ├── agent_card.py         # Compact card with status icon, progress bar, current operation
+    ├── conflict_alert.py     # Red banner when agents edit same file
+    ├── heatmap.py            # File access intensity with 30s decay
+    ├── live_stream.py        # Scrolling feed of tool operations
+    └── sparkline.py          # 60-second activity graph (▁▂▃▄▅▆▇█)
 ```
 
-## Key Features
+## Data Flow
 
-- **Live Detection**: Sessions modified within 60s shown as active agents
-- **Conflict Detection**: Alerts when 2+ agents edit same file within 5s
-- **Sparkline**: Activity over last 60 seconds
-- **Heatmap**: File access intensity with decay
-- **Agent Cards**: Status with animated progress bars
+1. `TailWatcher` monitors `~/.claude/projects/*/*.jsonl` via watchdog
+2. New JSONL lines parsed into `LiveActivityEvent` with tool name, file path, operation
+3. `ConflictDetector` tracks file access per session, emits `ConflictEvent` on overlap
+4. `App` routes events to widgets via `call_from_thread` for thread-safe UI updates
+5. Widgets use Textual reactive system to re-render on data changes
 
-## Keyboard Shortcuts
+## Key Patterns
 
-- `q` - Quit
-- `r` - Refresh
-- `d` - Toggle dark/light
-- `c` - Show conflict details
+- Agent status based on time since last activity: <5s active, <30s thinking, else idle
+- Conflict window is 5 seconds - two edits to same file within window triggers alert
+- Heatmap decays file counts after 30s of no access
+- Sparkline tracks ops/second over rolling 60-second window
