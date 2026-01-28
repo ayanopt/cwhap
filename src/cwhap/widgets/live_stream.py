@@ -2,6 +2,7 @@
 
 from collections import deque
 
+from rich.markup import escape
 from textual.app import ComposeResult
 from textual.containers import VerticalScroll
 from textual.reactive import reactive
@@ -101,19 +102,19 @@ class LiveStream(Widget):
 
             return (
                 f"[dim]{time_str}[/dim] "
-                f"[[[cyan]{session}[/cyan]]] "
-                f"[{color}]{event.tool_name}[/{color}] "
-                f"{short_file}"
+                f"\\[[cyan]{session}[/cyan]\\] "
+                f"[{color}]{escape(event.tool_name)}[/{color}] "
+                f"{escape(short_file)}"
             )
         elif event.tool_name:
             return (
                 f"[dim]{time_str}[/dim] "
-                f"[[[cyan]{session}[/cyan]]] "
-                f"[{color}]{event.tool_name}[/{color}]"
+                f"\\[[cyan]{session}[/cyan]\\] "
+                f"[{color}]{escape(event.tool_name)}[/{color}]"
             )
         else:
             return (
                 f"[dim]{time_str}[/dim] "
-                f"[[[cyan]{session}[/cyan]]] "
+                f"\\[[cyan]{session}[/cyan]\\] "
                 f"[dim]{event.event_type}[/dim]"
             )
