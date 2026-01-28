@@ -101,19 +101,19 @@ class LiveStream(Widget):
 
             return (
                 f"[dim]{time_str}[/dim] "
-                f"[[cyan]{session}[/cyan]] "
+                f"[[[cyan]{session}[/cyan]]] "
                 f"[{color}]{event.tool_name}[/{color}] "
                 f"{short_file}"
             )
         elif event.tool_name:
             return (
                 f"[dim]{time_str}[/dim] "
-                f"[[cyan]{session}[/cyan]] "
+                f"[[[cyan]{session}[/cyan]]] "
                 f"[{color}]{event.tool_name}[/{color}]"
             )
         else:
             return (
                 f"[dim]{time_str}[/dim] "
-                f"[[cyan]{session}[/cyan]] "
+                f"[[[cyan]{session}[/cyan]]] "
                 f"[dim]{event.event_type}[/dim]"
             )
