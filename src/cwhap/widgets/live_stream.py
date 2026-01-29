@@ -9,7 +9,7 @@ from textual.reactive import reactive
 from textual.widget import Widget
 from textual.widgets import Static
 
-from cwhap.models.agent import LiveActivityEvent
+from cwhap.models.agent import AGENT_COLORS, LiveActivityEvent
 
 
 class LiveStream(Widget):
@@ -52,12 +52,20 @@ class LiveStream(Widget):
         lambda: deque(maxlen=50), init=False
     )
 
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self._agent_colors: dict[str, int] = {}
+
     def compose(self) -> ComposeResult:
-        yield Static("[bold]Live Activity[/bold]", classes="stream-title")
+        yield Static(
+            "[bold]Live Activity Stream[/bold] [dim](recent 30 events)[/dim]",
+            classes="stream-title",
+        )
         yield VerticalScroll(id="stream-scroll")
 
-    def add_event(self, event: LiveActivityEvent) -> None:
+    def add_event(self, event: LiveActivityEvent, agent_color_index: int = 0) -> None:
         """Add a new event to the stream."""
+        self._agent_colors[event.session_id] = agent_color_index
         new_events = deque(self.events, maxlen=50)
         new_events.appendleft(event)  # Most recent first
         self.events = new_events
@@ -86,35 +94,42 @@ class LiveStream(Widget):
         time_str = event.timestamp.strftime("%H:%M:%S")
         session = event.session_id[:4]
 
+        # Get agent color
+        color_idx = self._agent_colors.get(event.session_id, 0)
+        agent_color = AGENT_COLORS[color_idx % len(AGENT_COLORS)]
+
         # Color based on operation
-        color = event.color
+        op_color = event.color
 
         if event.tool_name and event.file_path:
             # Shorten file path
-            parts = event.file_path.split("/")
-            if len(parts) > 1:
-                short_file = parts[-1]
+            if event.file_path.startswith("pattern:"):
+                short_file = f"🔍{event.file_path.replace('pattern:', '')[:18]}"
             else:
-                short_file = event.file_path
+                parts = event.file_path.split("/")
+                if len(parts) > 2:
+                    short_file = f".../{parts[-1]}"
+                else:
+                    short_file = parts[-1] if parts else event.file_path
 
-            if len(short_file) > 20:
-                short_file = short_file[:17] + "..."
+                if len(short_file) > 22:
+                    short_file = short_file[:19] + "..."
 
             return (
                 f"[dim]{time_str}[/dim] "
-                f"\\[[cyan]{session}[/cyan]\\] "
-                f"[{color}]{escape(event.tool_name)}[/{color}] "
+                f"\\[[{agent_color}]●{session}[/{agent_color}]\\] "
+                f"[{op_color}]{escape(event.tool_name)}[/{op_color}] "
                 f"{escape(short_file)}"
             )
         elif event.tool_name:
             return (
                 f"[dim]{time_str}[/dim] "
-                f"\\[[cyan]{session}[/cyan]\\] "
-                f"[{color}]{escape(event.tool_name)}[/{color}]"
+                f"\\[[{agent_color}]●{session}[/{agent_color}]\\] "
+                f"[{op_color}]{escape(event.tool_name)}[/{op_color}]"
             )
         else:
             return (
                 f"[dim]{time_str}[/dim] "
-                f"\\[[cyan]{session}[/cyan]\\] "
+                f"\\[[{agent_color}]●{session}[/{agent_color}]\\] "
                 f"[dim]{event.event_type}[/dim]"
             )

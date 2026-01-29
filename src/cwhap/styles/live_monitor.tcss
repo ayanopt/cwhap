@@ -35,15 +35,19 @@ ConflictAlert {
     color: $text-muted;
 }
 
-/* Row 3: Main content (stream + heatmap) */
+/* Row 3: Main content (stream + tree + heatmap in full mode, or just stream in simple mode) */
 #main-content {
     layout: grid;
-    grid-size: 2 1;
+    grid-size: 3 1;
     grid-gutter: 1;
     padding: 0 1;
 }
 
 LiveStream {
+    column-span: 1;
+}
+
+FileTree {
     column-span: 1;
 }
 

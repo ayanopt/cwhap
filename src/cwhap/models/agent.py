@@ -1,8 +1,14 @@
 """Live agent and conflict event models."""
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Literal
+
+# Agent color palette - unique colors for up to 12 agents
+AGENT_COLORS = [
+    "cyan", "magenta", "yellow", "green", "blue", "red",
+    "bright_cyan", "bright_magenta", "bright_yellow", "bright_green", "bright_blue", "bright_red",
+]
 
 
 @dataclass
@@ -12,12 +18,13 @@ class LiveAgent:
     session_id: str
     project_path: str
     status: Literal["active", "thinking", "idle"] = "idle"
-    last_activity: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    last_activity: datetime = field(default_factory=lambda: datetime.now(UTC))
     current_operation: str | None = None
     current_file: str | None = None
     files_accessed: list[str] = field(default_factory=list)
     message_count: int = 0
     tool_count: int = 0
+    color_index: int = 0  # Index into AGENT_COLORS
 
     @property
     def status_icon(self) -> str:
@@ -40,6 +47,11 @@ class LiveAgent:
         return colors.get(self.status, "white")
 
     @property
+    def agent_color(self) -> str:
+        """Get unique agent color."""
+        return AGENT_COLORS[self.color_index % len(AGENT_COLORS)]
+
+    @property
     def short_id(self) -> str:
         """Get shortened session ID for display."""
         return self.session_id[:8]
@@ -54,9 +66,9 @@ class LiveAgent:
 
     def seconds_since_activity(self) -> float:
         """Get seconds since last activity."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         if self.last_activity.tzinfo is None:
-            last = self.last_activity.replace(tzinfo=timezone.utc)
+            last = self.last_activity.replace(tzinfo=UTC)
         else:
             last = self.last_activity
         return (now - last).total_seconds()
@@ -70,7 +82,7 @@ class ConflictEvent:
     agents: list[str]  # session_ids involved
     severity: Literal["critical", "warning"]
     conflict_type: Literal["simultaneous_edit", "read_write_race"]
-    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    timestamp: datetime = field(default_factory=lambda: datetime.now(UTC))
 
     @property
     def short_agents(self) -> str:

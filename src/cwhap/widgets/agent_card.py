@@ -55,10 +55,12 @@ class AgentCard(Widget):
 
     agent: reactive[LiveAgent | None] = reactive(None)
     in_conflict: reactive[bool] = reactive(False)
+    simple_mode: reactive[bool] = reactive(False)
     _frame: int = 0
 
-    def __init__(self, agent: LiveAgent | None = None, **kwargs) -> None:
+    def __init__(self, agent: LiveAgent | None = None, simple_mode: bool = False, **kwargs) -> None:
         super().__init__(**kwargs)
+        self.simple_mode = simple_mode
         if agent:
             self.agent = agent
 
@@ -103,8 +105,10 @@ class AgentCard(Widget):
         elif agent.status == "thinking":
             self.add_class("--thinking")
 
-        # Header with status icon
+        # Header with status icon and agent color
         spinners = ["◐", "◓", "◑", "◒"]
+        agent_color = agent.agent_color
+
         if agent.status == "active":
             icon = f"[green]{spinners[self._frame]}[/green]"
         elif agent.status == "thinking":
@@ -114,15 +118,22 @@ class AgentCard(Widget):
 
         try:
             header = self.query_one("#header", Static)
-            header.update(f"{icon} Agent {agent.short_id}")
+            if self.simple_mode:
+                header.update(f"{icon} [{agent_color}]●[/{agent_color}]{agent.short_id}")
+            else:
+                header.update(f"{icon} [{agent_color}]●Agent[/{agent_color}] {agent.short_id}")
 
             project = self.query_one("#project", Static)
             project.update(agent.short_project)
 
             operation = self.query_one("#operation", Static)
             if agent.current_operation:
-                op_text = agent.current_operation[:24]
-                operation.update(f"→ {op_text}")
+                if self.simple_mode:
+                    op_text = agent.current_operation[:20]
+                    operation.update(f"{op_text}")
+                else:
+                    op_text = agent.current_operation[:24]
+                    operation.update(f"→ {op_text}")
             elif agent.status == "idle":
                 seconds = int(agent.seconds_since_activity())
                 if seconds < 60:
@@ -144,7 +155,14 @@ class AgentCard(Widget):
                 progress.progress = 0
 
             stats = self.query_one("#stats", Static)
-            stats.update(f"Msgs: {agent.message_count}  Tools: {agent.tool_count}")
+            files_count = len(set(agent.files_accessed))
+            if self.simple_mode:
+                stats.update(f"M:{agent.message_count} T:{agent.tool_count}")
+            else:
+                stats.update(
+                    f"Msgs:{agent.message_count} "
+                    f"Tools:{agent.tool_count} Files:{files_count}"
+                )
 
         except Exception:
             pass  # Widget may not be mounted yet

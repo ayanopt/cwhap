@@ -1,7 +1,6 @@
 """Main CWHAP Textual application - Live Monitor."""
 
 import time
-from datetime import timezone
 from pathlib import Path
 from typing import ClassVar
 
@@ -18,6 +17,7 @@ from cwhap.watchers.session_watcher import IndexWatcher
 from cwhap.watchers.tail_watcher import TailWatcher
 from cwhap.widgets.agent_card import AgentCard
 from cwhap.widgets.conflict_alert import ConflictAlert
+from cwhap.widgets.file_tree import FileTree
 from cwhap.widgets.heatmap import ActivityHeatmap
 from cwhap.widgets.live_stream import LiveStream
 from cwhap.widgets.sparkline import ActivitySparkline
@@ -38,13 +38,15 @@ class CwhapApp(App):
 
     dark: reactive[bool] = reactive(True)
 
-    def __init__(self) -> None:
+    def __init__(self, simple_mode: bool = False) -> None:
         super().__init__()
+        self.simple_mode = simple_mode
         self._agents: dict[str, LiveAgent] = {}
         self._agent_cards: dict[str, AgentCard] = {}
         self._tail_watcher: TailWatcher | None = None
         self._index_watcher: IndexWatcher | None = None
         self._conflict_detector = ConflictDetector(conflict_window_seconds=5.0)
+        self._next_color_index = 0  # For assigning unique colors to agents
 
     def compose(self) -> ComposeResult:
         """Create the live monitor layout."""
@@ -60,12 +62,21 @@ class CwhapApp(App):
             id="agents-container",
         )
 
-        # Main content: stream + heatmap
-        yield Container(
-            LiveStream(id="live-stream"),
-            ActivityHeatmap(id="heatmap"),
-            id="main-content",
-        )
+        # Main content layout depends on mode
+        if self.simple_mode:
+            # Simple mode: just stream
+            yield Container(
+                LiveStream(id="live-stream"),
+                id="main-content",
+            )
+        else:
+            # Full mode: stream + heatmap + file tree
+            yield Container(
+                LiveStream(id="live-stream"),
+                FileTree(id="file-tree"),
+                ActivityHeatmap(id="heatmap"),
+                id="main-content",
+            )
 
         # Activity sparkline footer
         yield ActivitySparkline(id="sparkline")
@@ -136,14 +147,15 @@ class CwhapApp(App):
                 if age < active_threshold:
                     # This session is active
                     if entry.session_id not in self._agents:
-                        self._add_agent(
-                            LiveAgent(
-                                session_id=entry.session_id,
-                                project_path=entry.project_path,
-                                status="active" if age < 10 else "idle",
-                                message_count=entry.message_count,
-                            )
+                        agent = LiveAgent(
+                            session_id=entry.session_id,
+                            project_path=entry.project_path,
+                            status="active" if age < 10 else "idle",
+                            message_count=entry.message_count,
+                            color_index=self._next_color_index,
                         )
+                        self._next_color_index += 1
+                        self._add_agent(agent)
                     else:
                         # Update existing agent
                         agent = self._agents[entry.session_id]
@@ -158,7 +170,7 @@ class CwhapApp(App):
         self._agents[agent.session_id] = agent
 
         # Create card widget
-        card = AgentCard(agent)
+        card = AgentCard(agent, simple_mode=self.simple_mode)
         self._agent_cards[agent.session_id] = card
 
     def _update_agents_display(self) -> None:
@@ -187,7 +199,7 @@ class CwhapApp(App):
         # Add/update cards
         for session_id, agent in self._agents.items():
             if session_id not in self._agent_cards:
-                card = AgentCard(agent)
+                card = AgentCard(agent, simple_mode=self.simple_mode)
                 self._agent_cards[session_id] = card
                 container.mount(card)
             else:
@@ -206,7 +218,6 @@ class CwhapApp(App):
 
     def _refresh_agent_status(self) -> None:
         """Periodically refresh agent status."""
-        now = time.time()
         inactive_threshold = 30  # Mark idle after 30s of no activity
 
         for agent in self._agents.values():
@@ -253,13 +264,14 @@ class CwhapApp(App):
         # Update or create agent
         if session_id not in self._agents:
             # New session detected
-            self._add_agent(
-                LiveAgent(
-                    session_id=session_id,
-                    project_path="",  # Will be updated from index
-                    status="active",
-                )
+            new_agent = LiveAgent(
+                session_id=session_id,
+                project_path="",  # Will be updated from index
+                status="active",
+                color_index=self._next_color_index,
             )
+            self._next_color_index += 1
+            self._add_agent(new_agent)
             self._update_agents_display()
 
         agent = self._agents[session_id]
@@ -269,7 +281,14 @@ class CwhapApp(App):
         if event.tool_name:
             agent.tool_count += 1
             if event.file_path:
-                agent.current_operation = f"{event.tool_name} {event.file_path.split('/')[-1]}"
+                # Track file access
+                if event.file_path not in agent.files_accessed:
+                    agent.files_accessed.append(event.file_path)
+
+                # Shorten file path for display
+                parts = event.file_path.split('/')
+                short_file = parts[-1] if parts else event.file_path
+                agent.current_operation = f"{event.tool_name} {short_file}"
                 agent.current_file = event.file_path
             else:
                 agent.current_operation = event.tool_name
@@ -283,7 +302,7 @@ class CwhapApp(App):
         # Update live stream
         try:
             stream = self.query_one("#live-stream", LiveStream)
-            stream.add_event(event)
+            stream.add_event(event, agent.color_index)
         except Exception:
             pass
 
@@ -291,6 +310,13 @@ class CwhapApp(App):
         try:
             heatmap = self.query_one("#heatmap", ActivityHeatmap)
             heatmap.record_access(event)
+        except Exception:
+            pass
+
+        # Update file tree
+        try:
+            tree = self.query_one("#file-tree", FileTree)
+            tree.record_access(event, agent.color_index)
         except Exception:
             pass
 

@@ -1,11 +1,10 @@
 """File activity heatmap widget."""
 
 from collections import defaultdict
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from textual.app import ComposeResult
 from textual.containers import VerticalScroll
-from textual.reactive import reactive
 from textual.widget import Widget
 from textual.widgets import Static
 
@@ -44,7 +43,10 @@ class ActivityHeatmap(Widget):
         self._access_times: dict[str, datetime] = {}
 
     def compose(self) -> ComposeResult:
-        yield Static("[bold]File Activity[/bold]", classes="heatmap-title")
+        yield Static(
+            "[bold]File Activity Heatmap[/bold] [dim](30s window)[/dim]",
+            classes="heatmap-title",
+        )
         yield VerticalScroll(id="heatmap-scroll")
 
     def on_mount(self) -> None:
@@ -56,10 +58,6 @@ class ActivityHeatmap(Widget):
         if not event.file_path:
             return
 
-        # Skip patterns and commands
-        if event.file_path.startswith("pattern:"):
-            return
-
         # Weight by operation type
         weight = 1
         if event.operation == "write":
@@ -68,11 +66,11 @@ class ActivityHeatmap(Widget):
             weight = 2
 
         self._access_counts[event.file_path] += weight
-        self._access_times[event.file_path] = datetime.now(timezone.utc)
+        self._access_times[event.file_path] = datetime.now(UTC)
 
     def _decay_and_refresh(self) -> None:
         """Decay old entries and refresh display."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         expired = []
 
         for path, last_time in self._access_times.items():
@@ -111,11 +109,16 @@ class ActivityHeatmap(Widget):
 
         for file_path, count in sorted_files:
             # Shorten path for display
-            parts = file_path.split("/")
-            if len(parts) > 2:
-                short_path = f".../{parts[-1]}"
+            if file_path.startswith("pattern:"):
+                # Show search patterns differently
+                pattern = file_path.replace("pattern:", "")
+                short_path = f"🔍 {pattern}"[:25]
             else:
-                short_path = file_path
+                parts = file_path.split("/")
+                if len(parts) > 3:
+                    short_path = f".../{'/'.join(parts[-2:])}"
+                else:
+                    short_path = file_path
 
             # Determine heat level and color
             heat_ratio = count / max_count
@@ -136,5 +139,5 @@ class ActivityHeatmap(Widget):
             bar_len = min(int(heat_ratio * 10) + 1, 10)
             bar = char * bar_len
 
-            text = f"{short_path:25} [{color}]{bar}[/{color}]"
+            text = f"{short_path:30} [{color}]{bar}[/{color}] {count}"
             scroll.mount(Static(text, classes="heat-row"))
