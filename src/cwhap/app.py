@@ -1,5 +1,7 @@
 """Main CWHAP Textual application - Live Monitor."""
 
+import logging
+import threading
 import time
 from pathlib import Path
 from typing import ClassVar
@@ -21,9 +23,13 @@ from cwhap.widgets.file_tree import FileTree
 from cwhap.widgets.heatmap import ActivityHeatmap
 from cwhap.widgets.live_stream import LiveStream
 from cwhap.widgets.sparkline import ActivitySparkline
+from cwhap.widgets.stats_bar import StatsBar
+
+# Set up logging
+logger = logging.getLogger(__name__)
 
 
-class CwhapApp(App):
+class CwhapApp(App[None]):
     """CWHAP - Live Monitor for Claude Code agents."""
 
     TITLE = "CWHAP - Live Monitor"
@@ -47,10 +53,14 @@ class CwhapApp(App):
         self._index_watcher: IndexWatcher | None = None
         self._conflict_detector = ConflictDetector(conflict_window_seconds=5.0)
         self._next_color_index = 0  # For assigning unique colors to agents
+        self._color_lock = threading.Lock()  # Thread-safe color assignment
 
     def compose(self) -> ComposeResult:
         """Create the live monitor layout."""
         yield Header()
+
+        # Stats summary bar
+        yield StatsBar(id="stats-bar")
 
         # Conflict alert banner (hidden by default)
         yield ConflictAlert(id="conflict-alert")
@@ -147,14 +157,16 @@ class CwhapApp(App):
                 if age < active_threshold:
                     # This session is active
                     if entry.session_id not in self._agents:
+                        with self._color_lock:
+                            color_idx = self._next_color_index
+                            self._next_color_index += 1
                         agent = LiveAgent(
                             session_id=entry.session_id,
                             project_path=entry.project_path,
                             status="active" if age < 10 else "idle",
                             message_count=entry.message_count,
-                            color_index=self._next_color_index,
+                            color_index=color_idx,
                         )
-                        self._next_color_index += 1
                         self._add_agent(agent)
                     else:
                         # Update existing agent
@@ -253,6 +265,9 @@ class CwhapApp(App):
         except Exception:
             pass
 
+        # Update stats bar
+        self._update_stats_bar()
+
     def _on_activity(self, event: LiveActivityEvent) -> None:
         """Handle live activity event from tail watcher."""
         self.call_from_thread(self._handle_activity, event)
@@ -263,14 +278,16 @@ class CwhapApp(App):
 
         # Update or create agent
         if session_id not in self._agents:
-            # New session detected
+            # New session detected - thread-safe color assignment
+            with self._color_lock:
+                color_idx = self._next_color_index
+                self._next_color_index += 1
             new_agent = LiveAgent(
                 session_id=session_id,
                 project_path="",  # Will be updated from index
                 status="active",
-                color_index=self._next_color_index,
+                color_index=color_idx,
             )
-            self._next_color_index += 1
             self._add_agent(new_agent)
             self._update_agents_display()
 
@@ -327,9 +344,11 @@ class CwhapApp(App):
         except Exception:
             pass
 
-        # Update agent card
+        # Update agent card with activity
         if session_id in self._agent_cards:
-            self._agent_cards[session_id].agent = agent
+            card = self._agent_cards[session_id]
+            card.agent = agent
+            card.record_activity()  # Track per-agent activity
 
     def _on_conflict(self, conflict: ConflictEvent) -> None:
         """Handle conflict event."""
@@ -376,6 +395,27 @@ class CwhapApp(App):
             )
         else:
             self.notify("No active conflicts", title="Conflicts")
+
+    def _update_stats_bar(self) -> None:
+        """Update the stats bar with current metrics."""
+        try:
+            stats_bar = self.query_one("#stats-bar", StatsBar)
+            total_messages = sum(a.message_count for a in self._agents.values())
+            total_tools = sum(a.tool_count for a in self._agents.values())
+            all_files: set[str] = set()
+            for a in self._agents.values():
+                all_files.update(a.files_accessed)
+            active_count = sum(1 for a in self._agents.values() if a.status == "active")
+
+            stats_bar.update_stats(
+                agents=len(self._agents),
+                messages=total_messages,
+                tools=total_tools,
+                files=len(all_files),
+                active=active_count,
+            )
+        except Exception:
+            pass
 
     async def action_quit(self) -> None:
         """Quit the application."""

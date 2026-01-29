@@ -1,20 +1,25 @@
 """Agent card widget showing live agent status."""
 
+from collections import deque
+
 from textual.app import ComposeResult
 from textual.reactive import reactive
 from textual.widget import Widget
-from textual.widgets import ProgressBar, Static
+from textual.widgets import Static
 
 from cwhap.models.agent import LiveAgent
 
+# Mini sparkline characters
+MINI_SPARK = "▁▂▃▄▅▆▇█"
+
 
 class AgentCard(Widget):
-    """Compact card showing a live agent's status."""
+    """Compact card showing a live agent's status with activity indicator."""
 
     DEFAULT_CSS = """
     AgentCard {
-        width: 28;
-        height: 8;
+        width: 32;
+        height: 7;
         border: round $primary;
         padding: 0 1;
         margin-right: 1;
@@ -47,6 +52,10 @@ class AgentCard(Widget):
         height: 1;
     }
 
+    AgentCard .agent-activity {
+        height: 1;
+    }
+
     AgentCard .agent-stats {
         color: $text-muted;
         height: 1;
@@ -56,29 +65,52 @@ class AgentCard(Widget):
     agent: reactive[LiveAgent | None] = reactive(None)
     in_conflict: reactive[bool] = reactive(False)
     simple_mode: reactive[bool] = reactive(False)
-    _frame: int = 0
 
-    def __init__(self, agent: LiveAgent | None = None, simple_mode: bool = False, **kwargs) -> None:
+    def __init__(self, agent: LiveAgent | None = None, simple_mode: bool = False, **kwargs) -> None:  # type: ignore[no-untyped-def]
         super().__init__(**kwargs)
+        self._frame: int = 0  # Instance variable for animation frame
+        self._activity_history: deque[int] = deque([0] * 20, maxlen=20)  # Last 20 seconds
+        self._current_activity: int = 0
         self.simple_mode = simple_mode
         if agent:
             self.agent = agent
 
     def on_mount(self) -> None:
-        """Start animation timer."""
+        """Start animation and activity timers."""
         self.set_interval(0.3, self._animate)
+        self.set_interval(1.0, self._tick_activity)
 
-    def _animate(self) -> None:
+    def _animate(self) -> None:  # type: ignore[override]
         """Update animation frame."""
         self._frame = (self._frame + 1) % 4
         if self.agent and self.agent.status in ("active", "thinking"):
             self.refresh()
 
+    def _tick_activity(self) -> None:
+        """Update activity history every second."""
+        self._activity_history.append(self._current_activity)
+        self._current_activity = 0
+
+    def record_activity(self) -> None:
+        """Record an activity event for this agent."""
+        self._current_activity += 1
+
+    def _render_mini_sparkline(self) -> str:
+        """Render a mini sparkline for this agent."""
+        if not self._activity_history:
+            return ""
+        max_val = max(self._activity_history) or 1
+        chars = []
+        for val in self._activity_history:
+            idx = min(int(val / max_val * 7), 7) if max_val > 0 else 0
+            chars.append(MINI_SPARK[idx])
+        return "".join(chars)
+
     def compose(self) -> ComposeResult:
         yield Static("", id="header", classes="agent-header")
         yield Static("", id="project", classes="agent-project")
         yield Static("", id="operation", classes="agent-operation")
-        yield ProgressBar(id="progress", total=100, show_eta=False)
+        yield Static("", id="activity", classes="agent-activity")
         yield Static("", id="stats", classes="agent-stats")
 
     def watch_agent(self, agent: LiveAgent | None) -> None:
@@ -144,15 +176,15 @@ class AgentCard(Widget):
             else:
                 operation.update("")
 
-            # Progress bar (activity indicator)
-            progress = self.query_one("#progress", ProgressBar)
+            # Activity sparkline
+            activity = self.query_one("#activity", Static)
+            sparkline = self._render_mini_sparkline()
             if agent.status == "active":
-                # Animate progress
-                progress.progress = (self._frame + 1) * 25
+                activity.update(f"[green]{sparkline}[/green]")
             elif agent.status == "thinking":
-                progress.progress = 50
+                activity.update(f"[yellow]{sparkline}[/yellow]")
             else:
-                progress.progress = 0
+                activity.update(f"[dim]{sparkline}[/dim]")
 
             stats = self.query_one("#stats", Static)
             files_count = len(set(agent.files_accessed))
