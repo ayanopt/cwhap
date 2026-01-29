@@ -14,8 +14,8 @@ from cwhap.models.agent import LiveActivityEvent
 class ActivityHeatmap(Widget):
     """Enhanced file activity heatmap with detailed metrics."""
 
-    # 10-level heat intensity
-    HEAT_CHARS = " .:-=+*#%@"
+    # 10-level heat intensity using smooth block progression
+    HEAT_CHARS = " ▁▂▃▄▅▆▇██"
 
     DEFAULT_CSS = """
     ActivityHeatmap {

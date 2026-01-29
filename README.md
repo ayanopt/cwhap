@@ -163,7 +163,7 @@ filename | intensity | heat_bar | count (%) | ops | age
 
 **Metrics Explained:**
 - **Intensity Level**: HOT (>75%), HIGH (>50%), MED (>25%), LOW (<25%) - color-coded
-- **Heat Bar**: 10-level visual representation using characters (space to @)
+- **Heat Bar**: 10-level visual representation using smooth block characters (▁▂▃▄▅▆▇█)
 - **Weighted Count**: write=3x, edit=2x, read=1x (shows true impact, not just frequency)
 - **Percentage**: Portion of total activity for context
 - **Operation Breakdown**: R:read W:write E:edit - exact operation counts
@@ -171,8 +171,8 @@ filename | intensity | heat_bar | count (%) | ops | age
 
 **Example:**
 ```
-src/main.py     HOT @@@@@@@@@@  150 (51.9%) | R: 0 W:50 E: 0 | <5s
-src/utils.py    MED  ----         60 (20.8%) | R: 0 W: 0 E:30 | <15s
+src/main.py     HOT ██████████  150 (51.9%) | R: 0 W:50 E: 0 | <5s
+src/utils.py    MED  ▄▄▄▄         60 (20.8%) | R: 0 W: 0 E:30 | <15s
 ```
 
 This design handles disparate activity levels gracefully (e.g., 1000 edits vs 1 read) and clearly shows not just which files are hot, but how they're being used.
