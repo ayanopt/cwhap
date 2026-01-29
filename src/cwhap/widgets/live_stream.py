@@ -11,6 +11,16 @@ from textual.widgets import Static
 
 from cwhap.models.agent import AGENT_COLORS, LiveActivityEvent
 
+# Operation type icons and colors
+OP_STYLES: dict[str | None, tuple[str, str]] = {
+    "read": ("R", "cyan"),
+    "write": ("W", "yellow"),
+    "edit": ("E", "green"),
+    "search": ("?", "magenta"),
+    "bash": ("$", "blue"),
+    None: ("-", "dim"),
+}
+
 
 class LiveStream(Widget):
     """Real-time activity stream showing agent operations."""
@@ -52,7 +62,7 @@ class LiveStream(Widget):
         lambda: deque(maxlen=50), init=False
     )
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs) -> None:  # type: ignore[no-untyped-def]
         super().__init__(**kwargs)
         self._agent_colors: dict[str, int] = {}
 
@@ -90,7 +100,7 @@ class LiveStream(Widget):
             scroll.mount(Static(text, classes=css_class))
 
     def _format_event(self, event: LiveActivityEvent) -> str:
-        """Format an event for display."""
+        """Format an event for display with operation icons."""
         time_str = event.timestamp.strftime("%H:%M:%S")
         session = event.session_id[:4]
 
@@ -98,13 +108,17 @@ class LiveStream(Widget):
         color_idx = self._agent_colors.get(event.session_id, 0)
         agent_color = AGENT_COLORS[color_idx % len(AGENT_COLORS)]
 
-        # Color based on operation
-        op_color = event.color
+        # Get operation icon and color
+        op_icon, op_color = OP_STYLES.get(event.operation, ("-", "dim"))
 
         if event.tool_name and event.file_path:
-            # Shorten file path
+            # Shorten file path based on type
             if event.file_path.startswith("pattern:"):
-                short_file = f"[?]{event.file_path.replace('pattern:', '')[:18]}"
+                pattern = event.file_path.replace("pattern:", "")[:20]
+                short_file = f"[?] {pattern}"
+            elif event.file_path.startswith("bash:"):
+                cmd = event.file_path.replace("bash:", "")[:20]
+                short_file = f"$ {cmd}"
             else:
                 parts = event.file_path.split("/")
                 if len(parts) > 2:
@@ -112,24 +126,26 @@ class LiveStream(Widget):
                 else:
                     short_file = parts[-1] if parts else event.file_path
 
-                if len(short_file) > 22:
-                    short_file = short_file[:19] + "..."
+                if len(short_file) > 24:
+                    short_file = short_file[:21] + "..."
 
             return (
                 f"[dim]{time_str}[/dim] "
                 f"\\[[{agent_color}]*{session}[/{agent_color}]\\] "
-                f"[{op_color}]{escape(event.tool_name)}[/{op_color}] "
+                f"[{op_color}]{op_icon}[/{op_color}] "
+                f"{escape(event.tool_name):6} "
                 f"{escape(short_file)}"
             )
         elif event.tool_name:
             return (
                 f"[dim]{time_str}[/dim] "
                 f"\\[[{agent_color}]*{session}[/{agent_color}]\\] "
-                f"[{op_color}]{escape(event.tool_name)}[/{op_color}]"
+                f"[{op_color}]{op_icon}[/{op_color}] "
+                f"{escape(event.tool_name)}"
             )
         else:
             return (
                 f"[dim]{time_str}[/dim] "
                 f"\\[[{agent_color}]*{session}[/{agent_color}]\\] "
-                f"[dim]{event.event_type}[/dim]"
+                f"[dim]-[/dim] {event.event_type}"
             )

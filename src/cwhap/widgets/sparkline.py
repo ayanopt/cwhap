@@ -1,7 +1,7 @@
 """Activity sparkline widget for visualizing activity over time."""
 
 from collections import deque
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from textual.reactive import reactive
 from textual.widget import Widget
@@ -26,9 +26,9 @@ class ActivitySparkline(Widget):
     ops_per_second: reactive[float] = reactive(0.0)
     conflict_count: reactive[int] = reactive(0)
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs) -> None:  # type: ignore[no-untyped-def]
         super().__init__(**kwargs)
-        self._last_tick = datetime.now(timezone.utc)
+        self._last_tick = datetime.now(UTC)
         self._current_count = 0
 
     def on_mount(self) -> None:

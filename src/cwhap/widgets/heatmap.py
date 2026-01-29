@@ -37,7 +37,7 @@ class ActivityHeatmap(Widget):
     _access_counts: dict[str, int] = {}
     _decay_time: float = 30.0  # Seconds before access fades
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs) -> None:  # type: ignore[no-untyped-def]
         super().__init__()
         self._access_counts = defaultdict(int)
         self._access_times: dict[str, datetime] = {}

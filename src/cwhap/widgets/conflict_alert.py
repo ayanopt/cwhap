@@ -42,7 +42,7 @@ class ConflictAlert(Widget):
         """Start blink animation for critical alerts."""
         self.set_interval(0.5, self._animate)
 
-    def _animate(self) -> None:
+    def _animate(self) -> None:  # type: ignore[override]
         """Animate the alert."""
         self._frame = (self._frame + 1) % 2
         if self.conflicts:

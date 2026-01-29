@@ -36,7 +36,7 @@ class FileTree(Widget):
     }
     """
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs) -> None:  # type: ignore[no-untyped-def]
         super().__init__(**kwargs)
         self._file_agents: dict[str, set[str]] = defaultdict(set)
         self._agent_colors: dict[str, int] = {}
@@ -49,7 +49,7 @@ class FileTree(Widget):
 
     def on_mount(self) -> None:
         """Start refresh timer."""
-        self.set_interval(2.0, self._decay_and_refresh)  # type: ignore
+        self.set_interval(2.0, self._decay_and_refresh)
 
     def record_access(
         self, event: LiveActivityEvent, agent_color_index: int
