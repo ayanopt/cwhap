@@ -57,82 +57,27 @@ Your preferred mode is saved to `~/.cwhap/config.json` when you use `--set-defau
 
 ## Dashboard Layout
 
-### Full Mode (default)
+### Initial View
 
-```
-┌────────────────────────────────────────────────────────────────────────────────────────┐
-│ CWHAP - Live Monitor                                                         [q/r/c]  │
-├────────────────────────────────────────────────────────────────────────────────────────┤
-│ Agents: 3 detected (2 active)  |  Msgs: 125  |  Tools: 387  |  Files: 24  |  5m      │
-├────────────────────────────────────────────────────────────────────────────────────────┤
-│ ! CONFLICT: src/app.py                                                                 │
-│ Agents abc1, def4 both editing!                                                        │
-├────────────────────────────────────────────────────────────────────────────────────────┤
-│ * Active Agents                                                                        │
-│ ┌──────────────────────────┬──────────────────────────┬──────────────────────────┐   │
-│ │ | *Agent abc1            │ / *Agent def4            │ o *Agent ghi7            │   │
-│ │ .../dev/myapp            │ .../dev/other            │ .../home/user            │   │
-│ │ -> Edit main.py          │ -> Read test.py          │ idle 2m                  │   │
-│ │ ▁▂▃▄▅▆▇█▇▆▅▄▃▂▁▁▂▃▄     │ ▁▁▂▃▄▃▂▁▁▁▂▃▄▅▆▅▄▃▂     │ ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁     │   │
-│ │ Msgs:45 Tools:132 Files:9│ Msgs:56 Tools:187 Files:8│ Msgs:24 Tools:68 Files:7│   │
-│ └──────────────────────────┴──────────────────────────┴──────────────────────────┘   │
-├────────────────────────────────────────────────────────────────────────────────────────┤
-│ Live Activity Stream (recent 30 events)                                               │
-│ ────────────────────────────────────────────────────────────────────────────────────  │
-│ 15:42:01 [*abc1] E Edit   main.py                                                     │
-│ 15:42:00 [*def4] R Read   test.py                                                     │
-│ 15:41:58 [*abc1] R Read   utils.py                                                    │
-│ 15:41:55 [*abc1] ? Grep   [?] "function"                                              │
-│ 15:41:52 [*abc1] $ Bash   $ pytest                                                    │
-├────────────────────────────────────────────────────────────────────────────────────────┤
-│ Agent File Tree                   │ File Activity Analysis                            │
-│                                   │ Legend: Heat[HOT/HIGH/MED/LOW] | Count (%) | ... │
-│ ! Overlapping Access              │ ────────────────────────────────────────────────  │
-│   +-- src/app.py                  │ src/main.py     HOT  ██████████  250 (52%) | ... │
-│       +-- *abc1 *def4             │ src/utils.py    MED  ▄▄▄▄         98 (20%) | ... │
-│                                   │ tests/test.py   LOW  ▁▁           45  (9%) | ... │
-│ Independent Work                  │ config.yaml     LOW                12  (3%) | ... │
-│   +-- config.json *abc1           │                                                   │
-│   +-- README.md *ghi7             │                                                   │
-├───────────────────────────────────┴───────────────────────────────────────────────────┤
-│ Activity ▁▂▃▄▅▆▇█▇▆▅▄▃▂▁▁▂▃▄▅▆▇█  Ops/sec: 3.2  Conflicts: 1                         │
-└────────────────────────────────────────────────────────────────────────────────────────┘
-```
+![Initial blank dashboard](artifacts/0.0.1_blank.png)
 
-**Key differences from diagram:**
-- Stats bar shows "X detected (Y active)" format
-- Agent cards include 20-second activity sparklines
-- Live stream shows operation icons (R/W/E/?/$) with tool names
-- Heatmap displays intensity levels (HOT/HIGH/MED/LOW), block bars, percentages, and operation breakdowns
-- All widgets update in real-time as agents work
+When you first start CWHAP, the dashboard waits for agent activity to appear.
 
-### Simple Mode (`--simple`)
+### Active Monitoring
 
-```
-┌────────────────────────────────────────────────────────────────┐
-│ CWHAP - Live Monitor                                   [q/r/c] │
-├────────────────────────────────────────────────────────────────┤
-│ * Active Agents                                                │
-│ ┌─────────────────┬─────────────────┬─────────────────┐       │
-│ │ | *abc1         │ / *def4         │ o *ghi7         │       │
-│ │ Edit main.py    │ Read test.py    │ idle 2m         │       │
-│ │ M:45 T:132      │ M:56 T:187      │ M:24 T:68       │       │
-│ └─────────────────┴─────────────────┴─────────────────┘       │
-├────────────────────────────────────────────────────────────────┤
-│ Live Activity Stream (recent 30 events)                       │
-│ ────────────────────────────────────────────────────────────  │
-│ 15:42:01 [*abc1] E Edit   main.py                             │
-│ 15:42:00 [*def4] R Read   test.py                             │
-│ 15:41:58 [*abc1] R Read   utils.py                            │
-│ 15:41:55 [*abc1] ? Grep   [?] "function"                      │
-└────────────────────────────────────────────────────────────────┘
-```
+![Active agents in progress](artifacts/0.0.1_progress.png)
 
-**Simple mode features:**
-- Compact agent cards showing just messages and tools
-- Full-width live activity stream
-- No file tree or heatmap (focused view)
-- Same operation icons and color coding
+The dashboard shows:
+- Real-time agent cards with mini-sparklines
+- Live activity stream with operation icons (R/W/E/?/$)
+- File tree showing collaboration patterns
+- Activity heatmap with intensity levels and operation breakdown
+
+### Conflict Detection
+
+![Conflict alert banner](artifacts/0.0.1_conflict.png)
+
+When multiple agents access the same file within 5 seconds, a conflict alert banner appears with color-coded agent badges
 
 ### Status Indicators
 
