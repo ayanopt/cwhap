@@ -88,7 +88,7 @@ The Activity Heatmap uses weighted scoring to reflect the true impact of operati
 
 This weighting ensures that a file with 10 writes (30 points) appears hotter than a file with 20 reads (20 points), which accurately reflects the activity's significance. The heatmap displays:
 - 10-level heat intensity visualization
-- Categorical intensity (CRIT/HIGH/MED/LOW)
+- Categorical intensity (HOT/HIGH/MED/LOW)
 - Percentage of total activity
 - Per-operation breakdown
 - Recency indicator

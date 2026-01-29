@@ -116,7 +116,7 @@ class ActivityHeatmap(Widget):
 
         # Add legend
         legend = (
-            "[dim]Legend: Heat[CRIT/HIGH/MED/LOW] | "
+            "[dim]Legend: Heat[HOT/HIGH/MED/LOW] | "
             "Count (%) | R:read W:write E:edit | Age[/dim]"
         )
         scroll.mount(Static(legend, classes="heat-legend"))
@@ -156,7 +156,7 @@ class ActivityHeatmap(Widget):
 
             # Intensity category
             if heat_ratio > 0.75:
-                intensity = "[red bold]CRIT[/red bold]"
+                intensity = "[red]HOT [/red]"
                 bar_color = "red"
             elif heat_ratio > 0.5:
                 intensity = "[yellow]HIGH[/yellow]"

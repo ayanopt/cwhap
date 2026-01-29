@@ -162,7 +162,7 @@ filename | intensity | heat_bar | count (%) | ops | age
 ```
 
 **Metrics Explained:**
-- **Intensity Level**: CRIT (>75%), HIGH (>50%), MED (>25%), LOW (<25%) - color-coded
+- **Intensity Level**: HOT (>75%), HIGH (>50%), MED (>25%), LOW (<25%) - color-coded
 - **Heat Bar**: 10-level visual representation using characters (space to @)
 - **Weighted Count**: write=3x, edit=2x, read=1x (shows true impact, not just frequency)
 - **Percentage**: Portion of total activity for context
@@ -171,7 +171,7 @@ filename | intensity | heat_bar | count (%) | ops | age
 
 **Example:**
 ```
-src/main.py    CRIT @@@@@@@@@@  150 (51.9%) | R: 0 W:50 E: 0 | <5s
+src/main.py     HOT @@@@@@@@@@  150 (51.9%) | R: 0 W:50 E: 0 | <5s
 src/utils.py    MED  ----         60 (20.8%) | R: 0 W: 0 E:30 | <15s
 ```
 
