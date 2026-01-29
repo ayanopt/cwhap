@@ -99,5 +99,4 @@ Only file operations (read/write/edit) trigger conflict detection.
 
 - `q` - Quit
 - `r` - Refresh (rescan active sessions)
-- `d` - Toggle dark/light mode
 - `c` - Show conflict details

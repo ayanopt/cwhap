@@ -43,7 +43,7 @@ class ActivityHeatmap(Widget):
     _decay_time: float = 30.0  # Seconds before access fades
 
     def __init__(self, **kwargs) -> None:  # type: ignore[no-untyped-def]
-        super().__init__()
+        super().__init__(**kwargs)
         self._access_counts = defaultdict(int)
         self._access_times: dict[str, datetime] = {}
 
@@ -93,7 +93,7 @@ class ActivityHeatmap(Widget):
         self._refresh_display()
 
     def _refresh_display(self) -> None:
-        """Refresh the heatmap display as a grid."""
+        """Refresh the heatmap display as a visual heat grid."""
         try:
             scroll = self.query_one("#heatmap-scroll", VerticalScroll)
         except Exception:
@@ -108,50 +108,49 @@ class ActivityHeatmap(Widget):
         # Sort by access count, most active first
         sorted_files = sorted(
             self._access_counts.items(), key=lambda x: x[1], reverse=True
-        )[:20]  # Top 20 files
+        )[:15]  # Top 15 files
 
         max_count = max(c for _, c in sorted_files) if sorted_files else 1
 
-        # Create grid rows (4 cells per row for better visibility)
-        cells_per_row = 4
-        for i in range(0, len(sorted_files), cells_per_row):
-            row_files = sorted_files[i:i + cells_per_row]
-            row_text_parts = []
-
-            for file_path, count in row_files:
-                # Shorten filename (not full path)
-                if file_path.startswith("pattern:"):
-                    short_name = f"?:{file_path.replace('pattern:', '')[:8]}"
-                elif file_path.startswith("bash:"):
-                    short_name = f"$:{file_path.replace('bash:', '')[:8]}"
+        # Create a visual bar chart-style heatmap
+        for file_path, count in sorted_files:
+            # Shorten filename
+            if file_path.startswith("pattern:"):
+                short_name = f"[?] {file_path.replace('pattern:', '')[:18]}"
+            elif file_path.startswith("bash:"):
+                short_name = f"[$] {file_path.replace('bash:', '')[:18]}"
+            else:
+                parts = file_path.split("/")
+                filename = parts[-1] if parts else file_path
+                # Show parent dir + filename for context
+                if len(parts) > 1:
+                    parent = parts[-2]
+                    short_name = f"{parent}/{filename}"[:22]
                 else:
-                    parts = file_path.split("/")
-                    filename = parts[-1] if parts else file_path
-                    short_name = filename[:12] if len(filename) <= 12 else filename[:9] + "..."
+                    short_name = filename[:22]
 
-                # Determine heat level and color
-                heat_ratio = count / max_count
-                if heat_ratio > 0.75:
-                    color = "red"
-                    char = self.HEAT_CHARS[3]
-                elif heat_ratio > 0.5:
-                    color = "yellow"
-                    char = self.HEAT_CHARS[2]
-                elif heat_ratio > 0.25:
-                    color = "cyan"
-                    char = self.HEAT_CHARS[1]
-                else:
-                    color = "white"
-                    char = self.HEAT_CHARS[0]
+            # Pad filename to fixed width
+            short_name = f"{short_name:22}"
 
-                # Create heat visualization block
-                block = char * 4  # 4 chars wide
-                cell = f"[{color}]{block}[/{color}] {short_name:12} ({count})"
-                row_text_parts.append(cell)
+            # Determine heat level and color
+            heat_ratio = count / max_count
+            if heat_ratio > 0.75:
+                color = "red"
+                char = self.HEAT_CHARS[3]
+            elif heat_ratio > 0.5:
+                color = "yellow"
+                char = self.HEAT_CHARS[2]
+            elif heat_ratio > 0.25:
+                color = "cyan"
+                char = self.HEAT_CHARS[1]
+            else:
+                color = "white"
+                char = self.HEAT_CHARS[0]
 
-            # Pad row if needed
-            while len(row_text_parts) < cells_per_row:
-                row_text_parts.append(" " * 25)
+            # Create heat bar (max 20 chars wide)
+            bar_width = max(1, int(heat_ratio * 20))
+            heat_bar = char * bar_width
 
-            row_text = "".join(row_text_parts)
-            scroll.mount(Static(row_text, classes="heat-cell"))
+            # Format: filename | heat bar | count
+            line = f"{short_name} [{color}]{heat_bar:20}[/{color}] {count:3}"
+            scroll.mount(Static(line, classes="heat-cell"))

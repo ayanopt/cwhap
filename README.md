@@ -52,8 +52,7 @@ Your preferred mode is saved to `~/.cwhap/config.json` when you use `--set-defau
 | Key | Action |
 |-----|--------|
 | `q` | Quit |
-| `r` | Refresh |
-| `d` | Toggle dark/light mode |
+| `r` | Refresh (rescan active sessions) |
 | `c` | Show conflict details |
 
 ## Dashboard Layout

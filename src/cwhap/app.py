@@ -9,7 +9,6 @@ from typing import ClassVar
 from textual.app import App, ComposeResult
 from textual.binding import Binding, BindingType
 from textual.containers import Container, HorizontalScroll
-from textual.reactive import reactive
 from textual.widgets import Footer, Header, Static
 
 from cwhap.models.agent import ConflictEvent, LiveActivityEvent, LiveAgent
@@ -38,11 +37,8 @@ class CwhapApp(App[None]):
     BINDINGS: ClassVar[list[BindingType]] = [
         Binding("q", "quit", "Quit"),
         Binding("r", "refresh", "Refresh"),
-        Binding("d", "toggle_dark", "Dark/Light"),
         Binding("c", "focus_conflicts", "Conflicts"),
     ]
-
-    dark: reactive[bool] = reactive(True)
 
     def __init__(self, simple_mode: bool = False) -> None:
         super().__init__()
@@ -376,11 +372,6 @@ class CwhapApp(App[None]):
     def action_refresh(self) -> None:
         """Manual refresh."""
         self._scan_active_sessions()
-
-    def action_toggle_dark(self) -> None:
-        """Toggle dark mode."""
-        self.dark = not self.dark
-        self.refresh_css(animate=False)  # Force CSS refresh for theme change
 
     def action_focus_conflicts(self) -> None:
         """Focus on conflict alert."""
