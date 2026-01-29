@@ -56,7 +56,7 @@ src/cwhap/
 - **Conflict Detection**: 5-second window - multiple agents accessing same file triggers alert
 - **File Tree**: Groups files by access pattern - "Overlapping Access" (conflicts) vs "Independent Work"
 - **Heatmap**: Decays file counts after 30s, shows full paths and access counts
-- **Live Stream**: Shows tool operations with color-coded agent badges [●sessionID]
+- **Live Stream**: Shows tool operations with color-coded agent badges [*sessionID]
 - **Sparkline**: Tracks ops/second over rolling 60-second window
 - **Simple Mode**: Optional flag (`--simple`) for minimal UI with just agents + stream
 - **Config Persistence**: User preference saved to `~/.cwhap/config.json` via `--set-default`
@@ -64,10 +64,13 @@ src/cwhap/
 ## UI Modes
 
 ### Full Mode (default)
-- 3-column layout: Live Stream | File Tree | Heatmap
+- 2-row layout for better visibility:
+  - Top row: Live Stream (full width)
+  - Bottom row: File Tree | Heatmap (side by side)
 - Agent cards show: Messages, Tools, Files accessed
 - File tree visualizes collaboration patterns
 - Heatmap shows file activity with counts
+- Search patterns and bash commands prefixed for clarity ([?] pattern, $ command)
 
 ### Simple Mode (`--simple`)
 - Single column: Live Stream only
