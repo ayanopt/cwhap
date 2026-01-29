@@ -1,7 +1,6 @@
 """Session data model."""
 
 from datetime import datetime
-from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -54,7 +53,7 @@ class Session(BaseModel):
     files_edited: list[str] = Field(default_factory=list)
     total_input_tokens: int = 0
     total_output_tokens: int = 0
-    model: Optional[str] = None
+    model: str | None = None
 
     @property
     def is_active(self) -> bool:

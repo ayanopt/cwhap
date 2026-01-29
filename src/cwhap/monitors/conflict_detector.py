@@ -2,8 +2,8 @@
 
 import threading
 from collections import defaultdict
-from datetime import datetime, timezone
-from typing import Callable
+from collections.abc import Callable
+from datetime import UTC, datetime
 
 from cwhap.models.agent import ConflictEvent, LiveActivityEvent
 
@@ -37,7 +37,7 @@ class ConflictDetector:
         if event.operation not in ("read", "write", "edit"):
             return
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         with self._lock:
             # Clean old entries
@@ -60,7 +60,7 @@ class ConflictDetector:
 
     def get_active_conflicts(self) -> list[ConflictEvent]:
         """Get list of currently active conflicts."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         active = []
 
         with self._lock:
