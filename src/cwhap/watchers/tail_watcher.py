@@ -158,7 +158,7 @@ class TailWatcher(BaseWatcher):
     def __init__(self, watch_path: Path | None = None) -> None:
         super().__init__()
         self.watch_path = watch_path or CLAUDE_PROJECTS_DIR
-        self._observer: Observer | None = None
+        self._observer: Observer | None = None  # type: ignore[valid-type]
         self._handler: TailFileHandler | None = None
 
     def start(self) -> None:
@@ -175,8 +175,8 @@ class TailWatcher(BaseWatcher):
         # Initialize positions for existing files
         self._init_file_positions()
 
-        self._observer.schedule(self._handler, str(self.watch_path), recursive=True)
-        self._observer.start()
+        self._observer.schedule(self._handler, str(self.watch_path), recursive=True)  # type: ignore[no-untyped-call]
+        self._observer.start()  # type: ignore[no-untyped-call]
         self._running = True
 
     def stop(self) -> None:
@@ -184,8 +184,8 @@ class TailWatcher(BaseWatcher):
         if not self._running or not self._observer:
             return
 
-        self._observer.stop()
-        self._observer.join(timeout=5)
+        self._observer.stop()  # type: ignore[attr-defined]
+        self._observer.join(timeout=5)  # type: ignore[attr-defined]
         self._observer = None
         self._handler = None
         self._running = False

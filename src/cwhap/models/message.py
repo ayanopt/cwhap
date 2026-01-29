@@ -1,7 +1,7 @@
 """Message and tool use data models."""
 
 from datetime import datetime
-from typing import Any, Literal, Optional
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
@@ -16,12 +16,13 @@ class ToolUse(BaseModel):
     model_config = {"populate_by_name": True}
 
     @property
-    def file_path(self) -> Optional[str]:
+    def file_path(self) -> str | None:
         """Extract file path from tool input if applicable."""
         # Different tools use different parameter names for file paths
         for key in ["file_path", "path", "notebook_path"]:
             if key in self.input_params:
-                return self.input_params[key]
+                val = self.input_params[key]
+                return str(val) if val is not None else None
         return None
 
     @property
@@ -43,24 +44,24 @@ class AssistantMessageContent(BaseModel):
     """Content block in an assistant message."""
 
     type: Literal["text", "tool_use", "thinking"]
-    text: Optional[str] = None
-    thinking: Optional[str] = None
+    text: str | None = None
+    thinking: str | None = None
 
     # Tool use fields
-    id: Optional[str] = None
-    name: Optional[str] = None
-    input: Optional[dict[str, Any]] = None
+    id: str | None = None
+    name: str | None = None
+    input: dict[str, Any] | None = None
 
 
 class AssistantMessage(BaseModel):
     """The message payload from Claude API."""
 
-    model: Optional[str] = None
-    id: Optional[str] = None
+    model: str | None = None
+    id: str | None = None
     role: str
     content: list[AssistantMessageContent] | str = Field(default_factory=list)
-    stop_reason: Optional[str] = None
-    usage: Optional[TokenUsage] = None
+    stop_reason: str | None = None
+    usage: TokenUsage | None = None
 
 
 class UserMessage(BaseModel):
@@ -77,14 +78,14 @@ class Message(BaseModel):
     uuid: str
     timestamp: datetime
     session_id: str = Field(alias="sessionId")
-    parent_uuid: Optional[str] = Field(None, alias="parentUuid")
+    parent_uuid: str | None = Field(None, alias="parentUuid")
     is_sidechain: bool = Field(False, alias="isSidechain")
-    cwd: Optional[str] = None
+    cwd: str | None = None
     git_branch: str = Field("", alias="gitBranch")
-    version: Optional[str] = None
+    version: str | None = None
 
     # Message content (type depends on message type)
-    message: Optional[AssistantMessage | UserMessage | dict[str, Any]] = None
+    message: AssistantMessage | UserMessage | dict[str, Any] | None = None
 
     model_config = {"populate_by_name": True}
 
@@ -118,7 +119,7 @@ class Message(BaseModel):
             if isinstance(self.message, UserMessage):
                 return self.message.content
             elif isinstance(self.message, dict):
-                return self.message.get("content", "")
+                return str(self.message.get("content", ""))
 
         if self.type == "assistant" and isinstance(self.message, AssistantMessage):
             if isinstance(self.message.content, str):

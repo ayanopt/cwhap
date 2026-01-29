@@ -1,12 +1,16 @@
 """Parser for Claude Code session files."""
 
 import json
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Iterator
+from typing import Literal
 
 from cwhap.models.file_event import FileEvent
-from cwhap.models.message import AssistantMessage, Message, ToolUse, UserMessage
-from cwhap.models.session import Session, SessionIndex, SessionIndexEntry
+from cwhap.models.message import AssistantMessage, Message, UserMessage
+from cwhap.models.session import Session, SessionIndex
+
+# Valid operation types
+OperationType = Literal["read", "write", "edit", "glob", "grep", "bash", "search"]
 
 # Default Claude Code data directory
 CLAUDE_DATA_DIR = Path.home() / ".claude"
@@ -105,7 +109,7 @@ def extract_file_events(message: Message) -> list[FileEvent]:
             pattern = tool.input_params.get("pattern", "")
             file_path = f"pattern:{pattern}"
 
-        operation_map = {
+        operation_map: dict[str, OperationType] = {
             "Read": "read",
             "Write": "write",
             "Edit": "edit",

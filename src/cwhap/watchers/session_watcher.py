@@ -1,8 +1,9 @@
 """Session file watcher using watchdog."""
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, Literal
+from typing import Literal
 
 from watchdog.events import FileSystemEvent, FileSystemEventHandler
 from watchdog.observers import Observer
@@ -82,7 +83,7 @@ class SessionWatcher(BaseWatcher):
     def __init__(self, watch_path: Path | None = None) -> None:
         super().__init__()
         self.watch_path = watch_path or CLAUDE_PROJECTS_DIR
-        self._observer: Observer | None = None
+        self._observer: Observer | None = None  # type: ignore[valid-type]
 
     def start(self) -> None:
         """Start watching session files."""
@@ -96,8 +97,8 @@ class SessionWatcher(BaseWatcher):
         handler = SessionFileHandler(self._on_session_event)
 
         # Watch the projects directory recursively
-        self._observer.schedule(handler, str(self.watch_path), recursive=True)
-        self._observer.start()
+        self._observer.schedule(handler, str(self.watch_path), recursive=True)  # type: ignore[no-untyped-call]
+        self._observer.start()  # type: ignore[no-untyped-call]
         self._running = True
 
     def stop(self) -> None:
@@ -105,8 +106,8 @@ class SessionWatcher(BaseWatcher):
         if not self._running or not self._observer:
             return
 
-        self._observer.stop()
-        self._observer.join(timeout=5)
+        self._observer.stop()  # type: ignore[attr-defined]
+        self._observer.join(timeout=5)  # type: ignore[attr-defined]
         self._observer = None
         self._running = False
 
@@ -121,7 +122,7 @@ class IndexWatcher(BaseWatcher):
     def __init__(self, watch_path: Path | None = None) -> None:
         super().__init__()
         self.watch_path = watch_path or CLAUDE_PROJECTS_DIR
-        self._observer: Observer | None = None
+        self._observer: Observer | None = None  # type: ignore[valid-type]
 
     def start(self) -> None:
         """Start watching index files."""
@@ -134,8 +135,8 @@ class IndexWatcher(BaseWatcher):
         self._observer = Observer()
         handler = IndexFileHandler(self._on_index_changed)
 
-        self._observer.schedule(handler, str(self.watch_path), recursive=True)
-        self._observer.start()
+        self._observer.schedule(handler, str(self.watch_path), recursive=True)  # type: ignore[no-untyped-call]
+        self._observer.start()  # type: ignore[no-untyped-call]
         self._running = True
 
     def stop(self) -> None:
@@ -143,8 +144,8 @@ class IndexWatcher(BaseWatcher):
         if not self._running or not self._observer:
             return
 
-        self._observer.stop()
-        self._observer.join(timeout=5)
+        self._observer.stop()  # type: ignore[attr-defined]
+        self._observer.join(timeout=5)  # type: ignore[attr-defined]
         self._observer = None
         self._running = False
 
