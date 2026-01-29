@@ -43,8 +43,12 @@ class StatsBar(Widget):
                 uptime = f"{hours}h{mins}m"
 
         # Build stats string with visual separators
+        agent_status = f"{self.total_agents} detected" if self.total_agents else "0 detected"
+        if self.active_count > 0:
+            agent_status += f" ({self.active_count} active)"
+
         parts = [
-            f"[bold cyan]Agents:[/bold cyan] {self.active_count}/{self.total_agents}",
+            f"[bold cyan]Agents:[/bold cyan] {agent_status}",
             f"[bold green]Msgs:[/bold green] {self.total_messages}",
             f"[bold yellow]Tools:[/bold yellow] {self.total_tools}",
             f"[bold magenta]Files:[/bold magenta] {self.total_files}",

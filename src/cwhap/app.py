@@ -380,6 +380,7 @@ class CwhapApp(App[None]):
     def action_toggle_dark(self) -> None:
         """Toggle dark mode."""
         self.dark = not self.dark
+        self.refresh_css(animate=False)  # Force CSS refresh for theme change
 
     def action_focus_conflicts(self) -> None:
         """Focus on conflict alert."""
