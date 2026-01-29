@@ -60,90 +60,114 @@ Your preferred mode is saved to `~/.cwhap/config.json` when you use `--set-defau
 ### Full Mode (default)
 
 ```
-┌──────────────────────────────────────────────────────────────────────────────────────┐
-│  CWHAP - Live Monitor                                                                │
-├──────────────────────────────────────────────────────────────────────────────────────┤
-│  Agents: 2/3  |  Msgs: 25  |  Tools: 78  |  Files: 13  |  Uptime: 5m                │
-├──────────────────────────────────────────────────────────────────────────────────────┤
-│  ! CONFLICT: src/app.py - Agents abc123, def456 both editing                        │
-├──────────────────────────────────────────────────────────────────────────────────────┤
-│ * Active Agents                                                                      │
-│ ┌────────────────────────────┬────────────────────────────┬────────────────────────┐│
-│ │ | *Agent abc12345          │ / *Agent def45678          │ o *Agent ghi78901      ││
-│ │ .../dev/myapp              │ .../dev/other              │ .../home/user          ││
-│ │ -> Edit main.py            │ -> Read test.py            │ idle 2m                ││
-│ │ ▁▂▃▄▅▆▇█▇▆▅▄▃▂▁▁▂▃▄       │ ▁▁▂▃▄▃▂▁▁▁▂▃▄▅▆▅▄▃▂▁      │ ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁  ││
-│ │ Msgs:12 Tools:45 Files:7   │ Msgs:8 Tools:23 Files:4    │ Msgs:5 Tools:10 Files:2││
-│ └────────────────────────────┴────────────────────────────┴────────────────────────┘│
-├──────────────────────────────────────────────────────────────────────────────────────┤
-│ Live Activity Stream (recent 30 events)                                             │
-│ ──────────────────────────────────────────────────────────────────────────────────  │
-│ 15:42:01 [*abc1] E Edit   main.py                                                   │
-│ 15:42:00 [*def4] R Read   test.py                                                   │
-│ 15:41:58 [*abc1] R Read   utils.py                                                  │
-│ 15:41:55 [*abc1] ? Grep   [?] "function"                                            │
-│ 15:41:52 [*abc1] $ Bash   $ pytest                                                  │
-├──────────────────────────────────────────────────────────────────────────────────────┤
-│ Agent File Tree                              │ File Activity Heatmap (30s window)   │
-│                                              │ ──────────────────────────────────   │
-│ ! Overlapping Access                         │ .../src/app.py          ████████ 8   │
-│   +-- .../src/app.py                         │ .../test.py             █████░░░ 5   │
-│       +-- *abc1 *def4                        │ .../utils.py            ███░░░░░ 3   │
-│                                              │ [?] *.tsx               █░░░░░░░ 2   │
-│ Independent Work                             │ $ pytest                █░░░░░░░ 1   │
-│   +-- .../config.json *abc1                  │                                      │
-│   +-- .../README.md *ghi7                    │                                      │
-├──────────────────────────────────────────────┴──────────────────────────────────────┤
-│ Activity ▁▂▃▄▅▆▇█▇▆▅▄▃▂▁▁▂▃▄▅▆▇█  Ops/sec: 2.3  Conflicts: 1                       │
-└──────────────────────────────────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│ CWHAP - Live Monitor                                                         [q/r/c]  │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│ Agents: 3 detected (2 active)  |  Msgs: 125  |  Tools: 387  |  Files: 24  |  5m      │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│ ! CONFLICT: src/app.py                                                                 │
+│ Agents abc1, def4 both editing!                                                        │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│ * Active Agents                                                                        │
+│ ┌──────────────────────────┬──────────────────────────┬──────────────────────────┐   │
+│ │ | *Agent abc1            │ / *Agent def4            │ o *Agent ghi7            │   │
+│ │ .../dev/myapp            │ .../dev/other            │ .../home/user            │   │
+│ │ -> Edit main.py          │ -> Read test.py          │ idle 2m                  │   │
+│ │ ▁▂▃▄▅▆▇█▇▆▅▄▃▂▁▁▂▃▄     │ ▁▁▂▃▄▃▂▁▁▁▂▃▄▅▆▅▄▃▂     │ ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁     │   │
+│ │ Msgs:45 Tools:132 Files:9│ Msgs:56 Tools:187 Files:8│ Msgs:24 Tools:68 Files:7│   │
+│ └──────────────────────────┴──────────────────────────┴──────────────────────────┘   │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│ Live Activity Stream (recent 30 events)                                               │
+│ ────────────────────────────────────────────────────────────────────────────────────  │
+│ 15:42:01 [*abc1] E Edit   main.py                                                     │
+│ 15:42:00 [*def4] R Read   test.py                                                     │
+│ 15:41:58 [*abc1] R Read   utils.py                                                    │
+│ 15:41:55 [*abc1] ? Grep   [?] "function"                                              │
+│ 15:41:52 [*abc1] $ Bash   $ pytest                                                    │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│ Agent File Tree                   │ File Activity Analysis                            │
+│                                   │ Legend: Heat[HOT/HIGH/MED/LOW] | Count (%) | ... │
+│ ! Overlapping Access              │ ────────────────────────────────────────────────  │
+│   +-- src/app.py                  │ src/main.py     HOT  ██████████  250 (52%) | ... │
+│       +-- *abc1 *def4             │ src/utils.py    MED  ▄▄▄▄         98 (20%) | ... │
+│                                   │ tests/test.py   LOW  ▁▁           45  (9%) | ... │
+│ Independent Work                  │ config.yaml     LOW                12  (3%) | ... │
+│   +-- config.json *abc1           │                                                   │
+│   +-- README.md *ghi7             │                                                   │
+├───────────────────────────────────┴───────────────────────────────────────────────────┤
+│ Activity ▁▂▃▄▅▆▇█▇▆▅▄▃▂▁▁▂▃▄▅▆▇█  Ops/sec: 3.2  Conflicts: 1                         │
+└────────────────────────────────────────────────────────────────────────────────────────┘
 ```
+
+**Key differences from diagram:**
+- Stats bar shows "X detected (Y active)" format
+- Agent cards include 20-second activity sparklines
+- Live stream shows operation icons (R/W/E/?/$) with tool names
+- Heatmap displays intensity levels (HOT/HIGH/MED/LOW), block bars, percentages, and operation breakdowns
+- All widgets update in real-time as agents work
 
 ### Simple Mode (`--simple`)
 
 ```
-┌──────────────────────────────────────────────────────────────┐
-│  CWHAP - Live Monitor                        [3 Active] [q] │
-├──────────────────────────────────────────────────────────────┤
-│ * Active Agents                                              │
-│ ┌─────────────┬─────────────┬─────────────┐                 │
-│ │ | *abc1     │ / *def4     │ o *ghi7     │                 │
-│ │ Edit main.py│ Read test.py│ idle 2m     │                 │
-│ │ M:12 T:45   │ M:8 T:23    │ M:5 T:10    │                 │
-│ └─────────────┴─────────────┴─────────────┘                 │
-├──────────────────────────────────────────────────────────────┤
-│ Live Activity Stream (recent 30 events)                     │
-│ ───────────────────────────────────────────                 │
-│ 15:42:01 [*abc1] E Edit   main.py                           │
-│ 15:42:00 [*def4] R Read   test.py                           │
-│ 15:41:58 [*abc1] R Read   utils.py                          │
-└──────────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────┐
+│ CWHAP - Live Monitor                                   [q/r/c] │
+├────────────────────────────────────────────────────────────────┤
+│ * Active Agents                                                │
+│ ┌─────────────────┬─────────────────┬─────────────────┐       │
+│ │ | *abc1         │ / *def4         │ o *ghi7         │       │
+│ │ Edit main.py    │ Read test.py    │ idle 2m         │       │
+│ │ M:45 T:132      │ M:56 T:187      │ M:24 T:68       │       │
+│ └─────────────────┴─────────────────┴─────────────────┘       │
+├────────────────────────────────────────────────────────────────┤
+│ Live Activity Stream (recent 30 events)                       │
+│ ────────────────────────────────────────────────────────────  │
+│ 15:42:01 [*abc1] E Edit   main.py                             │
+│ 15:42:00 [*def4] R Read   test.py                             │
+│ 15:41:58 [*abc1] R Read   utils.py                            │
+│ 15:41:55 [*abc1] ? Grep   [?] "function"                      │
+└────────────────────────────────────────────────────────────────┘
 ```
+
+**Simple mode features:**
+- Compact agent cards showing just messages and tools
+- Full-width live activity stream
+- No file tree or heatmap (focused view)
+- Same operation icons and color coding
 
 ### Status Indicators
 
-- **|/-\\** (spinner) - Agent is actively working (animated)
-- ***** Active (green) - Agent is currently performing operations
-- **~** Thinking (yellow) - Agent active within last 5 seconds
-- **o** Idle (dim) - No activity for 30+ seconds
+The status icon in agent cards shows real-time agent state:
+
+- **|/-\\** (animated spinner) - Active: agent is currently performing operations
+- **~** (tilde) - Thinking: agent was active within last 5 seconds
+- **o** (circle) - Idle: no activity for 30+ seconds
+
+Card borders change color to match status (green=active, yellow=thinking, default=idle)
 
 ### Operation Icons
 
-| Icon | Operation | Description |
-|------|-----------|-------------|
-| R | Read | Reading file contents |
-| W | Write | Writing new files |
-| E | Edit | Modifying existing files |
-| ? | Search | Pattern searches (Glob, Grep) |
-| $ | Bash | Shell commands |
+The live stream displays single-character operation icons with color coding:
 
-### Color Coding
+| Icon | Operation | Color | Description |
+|------|-----------|-------|-------------|
+| R | Read | Cyan | Reading file contents |
+| W | Write | Yellow | Writing new files |
+| E | Edit | Green | Modifying existing files |
+| ? | Search | Magenta | Pattern searches (Glob, Grep) |
+| $ | Bash | Blue | Shell commands |
 
-Each agent is assigned a unique color (*) that appears:
-- In the agent card header
-- Next to session IDs in the live stream ([*abc1])
-- In the file tree view showing which agents access which files
+Example: `15:42:01 [*abc1] E Edit   main.py` shows an edit operation
 
-This makes it easy to track individual agents across all views.
+### Agent Color Coding
+
+Each agent is automatically assigned a unique color from a 12-color palette. This color appears consistently throughout the UI:
+
+- **Agent Card Header**: `*Agent` marker shows agent's unique color
+- **Live Stream**: Session ID badges like `[*abc1]` use the agent's color
+- **File Tree**: Agent badges next to filenames (`*abc1 *def4`) show which agents accessed each file
+- **Conflict Alerts**: Multi-colored badges highlight which agents are involved
+
+The consistent color coding makes it easy to visually track individual agents across all views and quickly identify collaboration patterns.
 
 ### Mini Sparklines
 
