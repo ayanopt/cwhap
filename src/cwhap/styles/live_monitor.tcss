@@ -38,21 +38,27 @@ ConflictAlert {
 /* Row 3: Main content (stream + tree + heatmap in full mode, or just stream in simple mode) */
 #main-content {
     layout: grid;
-    grid-size: 3 1;
+    grid-size: 2 2;
     grid-gutter: 1;
     padding: 0 1;
 }
 
 LiveStream {
-    column-span: 1;
+    column-span: 2;
+    row-span: 1;
+    min-height: 20;
 }
 
 FileTree {
     column-span: 1;
+    row-span: 1;
+    min-height: 15;
 }
 
 ActivityHeatmap {
     column-span: 1;
+    row-span: 1;
+    min-height: 15;
 }
 
 /* Row 4: Footer with sparkline */
