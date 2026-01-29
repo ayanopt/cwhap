@@ -60,7 +60,7 @@ src/cwhap/
 - **Color Coding**: Each agent gets unique color from 12-color palette, consistent across all views
 - **Conflict Detection**: 5-second window - multiple agents accessing same file triggers alert
 - **File Tree**: Groups files by access pattern - "Overlapping Access" vs "Independent Work"
-- **Heatmap**: Decays file counts after 30s, shows full paths and access counts
+- **Heatmap**: Enhanced analysis with intensity levels, operation breakdown (R/W/E), weighted scoring, percentages, and recency tracking
 - **Live Stream**: Shows operation icons (R/W/E/?/$) with color-coded agent badges
 - **Sparkline**: Tracks ops/second over rolling 60-second window
 - **Mini-Sparklines**: Each agent card shows its own 20-second activity history
@@ -71,13 +71,27 @@ src/cwhap/
 ## Operation Types
 
 File operations tracked:
-- `read` (R) - Reading file contents
-- `write` (W) - Writing new files
-- `edit` (E) - Modifying existing files
+- `read` (R) - Reading file contents (weight: 1x)
+- `write` (W) - Writing new files (weight: 3x)
+- `edit` (E) - Modifying existing files (weight: 2x)
 - `search` (?) - Pattern searches (Glob, Grep)
 - `bash` ($) - Shell commands
 
 Only file operations (read/write/edit) trigger conflict detection.
+
+## Heatmap Scoring System
+
+The Activity Heatmap uses weighted scoring to reflect the true impact of operations:
+- **Write operations**: 3x weight (creating new content is high-impact)
+- **Edit operations**: 2x weight (modifying existing content)
+- **Read operations**: 1x weight (passive access)
+
+This weighting ensures that a file with 10 writes (30 points) appears hotter than a file with 20 reads (20 points), which accurately reflects the activity's significance. The heatmap displays:
+- 10-level heat intensity visualization
+- Categorical intensity (CRIT/HIGH/MED/LOW)
+- Percentage of total activity
+- Per-operation breakdown
+- Recency indicator
 
 ## UI Modes
 

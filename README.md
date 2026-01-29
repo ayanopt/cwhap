@@ -13,7 +13,7 @@
 - **Live Agent Monitoring** - See all active Claude Code sessions with real-time status updates
 - **File Tree View** - Visualize agent collaboration patterns and see where agents' work overlaps
 - **Conflict Detection** - Get alerts when multiple agents try to edit the same file
-- **Activity Heatmap** - Visualize which files are being accessed most frequently
+- **Activity Heatmap** - Comprehensive file activity analysis with intensity levels, operation breakdown, and recency tracking
 - **Live Stream** - Watch file operations with operation icons (R/W/E/?/$)
 - **Activity Sparkline** - Track operations per second over 60-second rolling window
 - **Simple Mode** - Optional minimal UI for focused monitoring
@@ -151,6 +151,31 @@ Each agent card displays a mini sparkline showing the agent's activity over the 
 - Which agents are most active
 - Activity patterns over time
 - When an agent becomes idle
+
+### File Activity Heatmap
+
+The **File Activity Analysis** widget provides comprehensive metrics for each file:
+
+**Display Format:**
+```
+filename | intensity | heat_bar | count (%) | ops | age
+```
+
+**Metrics Explained:**
+- **Intensity Level**: CRIT (>75%), HIGH (>50%), MED (>25%), LOW (<25%) - color-coded
+- **Heat Bar**: 10-level visual representation using characters (space to @)
+- **Weighted Count**: write=3x, edit=2x, read=1x (shows true impact, not just frequency)
+- **Percentage**: Portion of total activity for context
+- **Operation Breakdown**: R:read W:write E:edit - exact operation counts
+- **Age**: Time since last access (<5s green, <15s yellow, >15s dim)
+
+**Example:**
+```
+src/main.py    CRIT @@@@@@@@@@  150 (51.9%) | R: 0 W:50 E: 0 | <5s
+src/utils.py    MED  ----         60 (20.8%) | R: 0 W: 0 E:30 | <15s
+```
+
+This design handles disparate activity levels gracefully (e.g., 1000 edits vs 1 read) and clearly shows not just which files are hot, but how they're being used.
 
 ### Conflict Detection
 
