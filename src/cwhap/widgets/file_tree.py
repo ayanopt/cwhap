@@ -58,8 +58,8 @@ class FileTree(Widget):
         if not event.file_path:
             return
 
-        # Skip pattern files for tree view
-        if event.file_path.startswith("pattern:"):
+        # Skip patterns and bash commands for tree view
+        if event.file_path.startswith(("pattern:", "bash:")):
             return
 
         self._file_agents[event.file_path].add(event.session_id)
@@ -107,7 +107,7 @@ class FileTree(Widget):
 
         # Show conflicts first (most important)
         if conflicts:
-            scroll.mount(Static("[bold red]⚠ Overlapping Access[/bold red]"))
+            scroll.mount(Static("[bold red]! Overlapping Access[/bold red]"))
             for file_path, agents in sorted(conflicts, key=lambda x: len(x[1]), reverse=True):
                 self._add_file_item(scroll, file_path, agents, is_conflict=True)
             scroll.mount(Static(""))
@@ -135,7 +135,7 @@ class FileTree(Widget):
             short_id = session_id[:4]
             color_idx = self._agent_colors.get(session_id, 0)
             color = AGENT_COLORS[color_idx % len(AGENT_COLORS)]
-            agent_badges.append(f"[{color}]●{short_id}[/{color}]")
+            agent_badges.append(f"[{color}]*{short_id}[/{color}]")
 
         badges_str = " ".join(agent_badges)
 

@@ -112,7 +112,11 @@ class ActivityHeatmap(Widget):
             if file_path.startswith("pattern:"):
                 # Show search patterns differently
                 pattern = file_path.replace("pattern:", "")
-                short_path = f"🔍 {pattern}"[:25]
+                short_path = f"[?] {pattern}"[:30]
+            elif file_path.startswith("bash:"):
+                # Show bash commands differently
+                cmd = file_path.replace("bash:", "")
+                short_path = f"$ {cmd}"[:30]
             else:
                 parts = file_path.split("/")
                 if len(parts) > 3:

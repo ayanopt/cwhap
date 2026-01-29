@@ -2,9 +2,9 @@
 
 import json
 import threading
-from datetime import datetime, timezone
+from collections.abc import Callable
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Callable
 
 from watchdog.events import FileSystemEvent, FileSystemEventHandler
 from watchdog.observers import Observer
@@ -57,7 +57,7 @@ class TailFileHandler(FileSystemEventHandler):
             last_pos = self._positions.get(path_str, 0)
 
         try:
-            with open(path, "r") as f:
+            with open(path) as f:
                 f.seek(last_pos)
                 new_lines = f.readlines()
                 new_pos = f.tell()
@@ -90,12 +90,12 @@ class TailFileHandler(FileSystemEventHandler):
         timestamp_str = data.get("timestamp")
 
         if not timestamp_str:
-            timestamp = datetime.now(timezone.utc)
+            timestamp = datetime.now(UTC)
         else:
             try:
                 timestamp = datetime.fromisoformat(timestamp_str.replace("Z", "+00:00"))
             except ValueError:
-                timestamp = datetime.now(timezone.utc)
+                timestamp = datetime.now(UTC)
 
         # Extract tool use from assistant messages
         if msg_type == "assistant":
@@ -126,10 +126,12 @@ class TailFileHandler(FileSystemEventHandler):
                             operation = "edit"
                         elif tool_name in ("Glob", "Grep"):
                             operation = "search"
-                            file_path = input_params.get("pattern", "")
+                            pattern = input_params.get("pattern", "")
+                            file_path = f"pattern:{pattern}" if pattern else None
                         elif tool_name == "Bash":
                             operation = "bash"
-                            file_path = input_params.get("command", "")[:50]
+                            cmd = input_params.get("command", "")[:50]
+                            file_path = f"bash:{cmd}" if cmd else None
 
                         return LiveActivityEvent(
                             session_id=session_id,
