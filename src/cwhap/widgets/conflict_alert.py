@@ -81,7 +81,7 @@ class ConflictAlert(Widget):
             lines.append(
                 f"[bold blink]{alert_icon} CONFLICT: {c.short_file}[/bold blink]"
             )
-            lines.append(f"Agents {c.short_agents} both editing!")
+            lines.append(f"Agents {c.short_agents} editing!")
 
             if len(critical) > 1:
                 lines.append(f"[dim]+{len(critical) - 1} more critical conflicts[/dim]")
