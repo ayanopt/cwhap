@@ -76,7 +76,7 @@ class ConflictAlert(Widget):
 
         if critical:
             # Blinking alert for critical
-            alert_icon = "⚠" if self._frame == 0 else "!"
+            alert_icon = "!" if self._frame == 0 else "!!"
             c = critical[0]
             lines.append(
                 f"[bold blink]{alert_icon} CONFLICT: {c.short_file}[/bold blink]"
@@ -88,7 +88,7 @@ class ConflictAlert(Widget):
 
         elif warnings:
             w = warnings[0]
-            lines.append(f"[yellow]⚠ Warning: {w.short_file}[/yellow]")
+            lines.append(f"[yellow]! Warning: {w.short_file}[/yellow]")
             lines.append(f"[dim]Read/write race between {w.short_agents}[/dim]")
 
             if len(warnings) > 1:

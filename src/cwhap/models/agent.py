@@ -30,9 +30,9 @@ class LiveAgent:
     def status_icon(self) -> str:
         """Get status indicator icon."""
         icons = {
-            "active": "●",
-            "thinking": "◐",
-            "idle": "○",
+            "active": "*",
+            "thinking": "~",
+            "idle": "o",
         }
         return icons.get(self.status, "?")
 

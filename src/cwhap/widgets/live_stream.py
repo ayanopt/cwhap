@@ -104,7 +104,7 @@ class LiveStream(Widget):
         if event.tool_name and event.file_path:
             # Shorten file path
             if event.file_path.startswith("pattern:"):
-                short_file = f"🔍{event.file_path.replace('pattern:', '')[:18]}"
+                short_file = f"[?]{event.file_path.replace('pattern:', '')[:18]}"
             else:
                 parts = event.file_path.split("/")
                 if len(parts) > 2:
@@ -117,19 +117,19 @@ class LiveStream(Widget):
 
             return (
                 f"[dim]{time_str}[/dim] "
-                f"\\[[{agent_color}]●{session}[/{agent_color}]\\] "
+                f"\\[[{agent_color}]*{session}[/{agent_color}]\\] "
                 f"[{op_color}]{escape(event.tool_name)}[/{op_color}] "
                 f"{escape(short_file)}"
             )
         elif event.tool_name:
             return (
                 f"[dim]{time_str}[/dim] "
-                f"\\[[{agent_color}]●{session}[/{agent_color}]\\] "
+                f"\\[[{agent_color}]*{session}[/{agent_color}]\\] "
                 f"[{op_color}]{escape(event.tool_name)}[/{op_color}]"
             )
         else:
             return (
                 f"[dim]{time_str}[/dim] "
-                f"\\[[{agent_color}]●{session}[/{agent_color}]\\] "
+                f"\\[[{agent_color}]*{session}[/{agent_color}]\\] "
                 f"[dim]{event.event_type}[/dim]"
             )

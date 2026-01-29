@@ -106,7 +106,7 @@ class AgentCard(Widget):
             self.add_class("--thinking")
 
         # Header with status icon and agent color
-        spinners = ["◐", "◓", "◑", "◒"]
+        spinners = ["|", "/", "-", "\\"]
         agent_color = agent.agent_color
 
         if agent.status == "active":
@@ -119,9 +119,9 @@ class AgentCard(Widget):
         try:
             header = self.query_one("#header", Static)
             if self.simple_mode:
-                header.update(f"{icon} [{agent_color}]●[/{agent_color}]{agent.short_id}")
+                header.update(f"{icon} [{agent_color}]*[/{agent_color}]{agent.short_id}")
             else:
-                header.update(f"{icon} [{agent_color}]●Agent[/{agent_color}] {agent.short_id}")
+                header.update(f"{icon} [{agent_color}]*Agent[/{agent_color}] {agent.short_id}")
 
             project = self.query_one("#project", Static)
             project.update(agent.short_project)
