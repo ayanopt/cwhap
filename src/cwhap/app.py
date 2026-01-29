@@ -8,6 +8,7 @@ from typing import ClassVar
 from textual.app import App, ComposeResult
 from textual.binding import Binding, BindingType
 from textual.containers import Container, HorizontalScroll
+from textual.reactive import reactive
 from textual.widgets import Footer, Header, Static
 
 from cwhap.models.agent import ConflictEvent, LiveActivityEvent, LiveAgent
@@ -34,6 +35,8 @@ class CwhapApp(App):
         Binding("d", "toggle_dark", "Dark/Light"),
         Binding("c", "focus_conflicts", "Conflicts"),
     ]
+
+    dark: reactive[bool] = reactive(True)
 
     def __init__(self) -> None:
         super().__init__()
