@@ -20,6 +20,14 @@
 
 ## Installation
 
+### From GitHub Release
+
+```bash
+pip install https://github.com/ayanopt/cwhap/archive/refs/tags/init.tar.gz
+```
+
+### From Source (for development)
+
 ```bash
 pip install -e .
 ```
